@@ -28,6 +28,7 @@ interface Video {
 
 const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [filteredVideos, setFilteredVideos] = useState<Video[]>([]);
 
   // Mock YouTube-style video data
   const videos: Video[] = [
@@ -97,21 +98,41 @@ const HomePage = () => {
     "All", "Space", "Science", "NASA", "Astronomy", "Physics", "Documentaries", "Education", "Technology"
   ];
 
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      const filtered = videos.filter(video => 
+        video.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        video.channel.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredVideos(filtered);
+    } else {
+      setFilteredVideos([]);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const videosToShow = filteredVideos.length > 0 ? filteredVideos : videos;
+
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-black via-red-950 to-black text-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+      <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-sm border-b border-red-900/30">
         <div className="flex items-center justify-between px-4 py-2">
           {/* Left side */}
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="text-white hover:bg-red-900/20">
               <Menu size={20} />
             </Button>
             <Link to="/" className="flex items-center gap-1">
-              <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-r from-red-600 to-red-800 rounded flex items-center justify-center">
                 <Video size={16} className="text-white" />
               </div>
-              <span className="text-xl font-bold dark:text-white">AstroTube</span>
+              <span className="text-xl font-bold text-white">AstroTube</span>
             </Link>
           </div>
 
@@ -124,10 +145,15 @@ const HomePage = () => {
                   placeholder="Search"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="rounded-r-none border-r-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                  onKeyPress={handleKeyPress}
+                  className="rounded-r-none border-r-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-gray-900 border-gray-700 text-white placeholder:text-gray-400"
                 />
               </div>
-              <Button variant="outline" className="rounded-l-none px-6">
+              <Button 
+                variant="outline" 
+                className="rounded-l-none px-6 bg-gray-800 border-gray-700 text-white hover:bg-red-900/20"
+                onClick={handleSearch}
+              >
                 <Search size={18} />
               </Button>
             </div>
@@ -135,13 +161,13 @@ const HomePage = () => {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="text-white hover:bg-red-900/20">
               <Upload size={20} />
             </Button>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="text-white hover:bg-red-900/20">
               <Bell size={20} />
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-full">
+            <Button variant="ghost" size="icon" className="rounded-full text-white hover:bg-red-900/20">
               <User size={20} />
             </Button>
           </div>
@@ -150,17 +176,17 @@ const HomePage = () => {
 
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-64 hidden lg:block border-r border-gray-200 dark:border-gray-800 min-h-screen">
+        <aside className="w-64 hidden lg:block border-r border-red-900/30 min-h-screen bg-black/20">
           <nav className="p-3">
             <div className="space-y-1">
               <Link to="/">
-                <Button variant="ghost" className="w-full justify-start gap-6 bg-gray-100 dark:bg-gray-800">
+                <Button variant="ghost" className="w-full justify-start gap-6 bg-red-900/30 text-white hover:bg-red-900/40">
                   <Home size={20} />
                   Home
                 </Button>
               </Link>
               <Link to="/shorts">
-                <Button variant="ghost" className="w-full justify-start gap-6">
+                <Button variant="ghost" className="w-full justify-start gap-6 text-white hover:bg-red-900/20">
                   <Video size={20} />
                   Shorts
                 </Button>
@@ -172,14 +198,18 @@ const HomePage = () => {
         {/* Main Content */}
         <main className="flex-1">
           {/* Category Pills */}
-          <div className="sticky top-[73px] z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-4">
+          <div className="sticky top-[73px] z-40 bg-black/80 backdrop-blur-sm border-b border-red-900/30 p-4">
             <div className="flex gap-3 overflow-x-auto">
               {categories.map((category, index) => (
                 <Button
                   key={category}
                   variant={index === 0 ? "default" : "secondary"}
                   size="sm"
-                  className="whitespace-nowrap"
+                  className={`whitespace-nowrap ${
+                    index === 0 
+                      ? "bg-red-600 hover:bg-red-700 text-white" 
+                      : "bg-gray-800 text-white hover:bg-red-900/20"
+                  }`}
                 >
                   {category}
                 </Button>
@@ -189,11 +219,21 @@ const HomePage = () => {
 
           {/* Video Grid */}
           <div className="p-4">
+            {searchQuery && (
+              <div className="mb-4">
+                <p className="text-gray-300">
+                  {filteredVideos.length > 0 
+                    ? `Found ${filteredVideos.length} results for "${searchQuery}"`
+                    : `No results found for "${searchQuery}"`
+                  }
+                </p>
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {videos.map((video) => (
+              {videosToShow.map((video) => (
                 <div key={video.id} className="group cursor-pointer">
                   {/* Thumbnail */}
-                  <div className="relative aspect-video bg-gray-200 dark:bg-gray-800 rounded-xl overflow-hidden mb-3">
+                  <div className="relative aspect-video bg-gray-800 rounded-xl overflow-hidden mb-3">
                     <img
                       src={video.thumbnail}
                       alt={video.title}
@@ -212,17 +252,17 @@ const HomePage = () => {
                       className="w-9 h-9 rounded-full flex-shrink-0 mt-0.5"
                     />
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-sm line-clamp-2 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                      <h3 className="font-medium text-sm line-clamp-2 text-white group-hover:text-red-400">
                         {video.title}
                       </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      <p className="text-sm text-gray-400 mt-1">
                         {video.channel}
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-gray-400">
                         {video.views} • {video.uploadTime}
                       </p>
                     </div>
-                    <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-white hover:bg-red-900/20">
                       <MoreHorizontal size={16} />
                     </Button>
                   </div>
