@@ -149,13 +149,8 @@ const Index = () => {
       {/* Shorts Feed */}
       <div
         ref={containerRef}
-        className="h-full overflow-y-scroll snap-y snap-mandatory"
+        className="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide"
         onScroll={handleScroll}
-        style={{ 
-          scrollbarWidth: 'none', 
-          msOverflowStyle: 'none',
-          WebkitScrollbar: { display: 'none' }
-        }}
       >
         {shorts.map((short, index) => (
           <div
